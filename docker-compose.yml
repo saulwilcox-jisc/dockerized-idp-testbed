@@ -11,6 +11,38 @@ services:
      - "80:80"
      - "443:443"
 
+  # 7.4 Image & pdo extension
+  php:
+    build:
+      context: ./php-fpm
+      dockerfile: Dockerfile
+    container_name: php
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - "9000:9000"
+    networks:
+      - back
+
+  composer:
+    image: composer:latest
+    container_name: composer
+    volumes:
+      - ./:/var/www/html
+    working_dir: /var/www/html
+    depends_on:
+      - php
+    networks:
+      - front
+
+  npm:
+    image: node:13.7
+    container_name: npm
+    volumes:
+      - ./:/var/www/html
+    working_dir: /var/www/html
+    entrypoint: ['npm']
+
   idp:
     build: ./idp/
     depends_on: 
