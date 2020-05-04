@@ -5,24 +5,29 @@ services:
   httpd-proxy:
     build: ./httpd-proxy/
     networks:
-     - front
-     - back
+      - front
+      - back
     ports:
-     - "80:80"
-     - "443:443"
+      - "80:80"
+      - "443:443"
+    links:
+      - php-fpm
 
   # 7.4 Image & pdo extension
-  php:
+  php-fpm:
     build:
       context: ./php-fpm
       dockerfile: Dockerfile
-    container_name: php
+    container_name: php-fpm
     volumes:
       - ./:/var/www/html
     ports:
       - "9000:9000"
     networks:
       - back
+      - front
+    links:
+      - httpd-proxy
 
   composer:
     image: composer:latest
