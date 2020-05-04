@@ -1,0 +1,1 @@
+curl -X POST -H 'Content-Type: application/json' "https://localhost:8443/register?email=johndoe@test.com&password=test" --insecure

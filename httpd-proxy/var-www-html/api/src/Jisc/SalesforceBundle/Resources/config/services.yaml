@@ -1,0 +1,19 @@
+services:
+  'App\Jisc\SalesforceBundle\Service\SalesforceService': '@salesforce.service'
+  'App\Jisc\SalesforceBundle\Client\SalesforceClient': '@salesforce.client'
+  'App\Jisc\SalesforceBundle\Service\UrlGenerator': '@salesforce.urlGenerator'
+  salesforce.service:
+    class: App\Jisc\SalesforceBundle\Service\SalesforceService
+  salesforce.client:
+    class: App\Jisc\SalesforceBundle\Client\SalesforceClient
+    arguments:
+      $client: '@eight_points_guzzle.client.salesforce'
+      $urlGenerator: '@salesforce.urlGenerator'
+      $authEndpoint: '%env(resolve:SALESFORCE_AUTH_ENDPOINT)%'
+      $clientId: '%env(resolve:SALESFORCE_CLIENT_ID)%'
+      $username: '%env(resolve:SALESFORCE_USERNAME)%'
+  salesforce.urlGenerator:
+    class: App\Jisc\SalesforceBundle\Service\UrlGenerator
+    arguments:
+      $version: '%env(resolve:SALESFORCE_VERSION)%'
+      $endpoint: '%env(resolve:SALESFORCE_REST_ENDPOINT)%'

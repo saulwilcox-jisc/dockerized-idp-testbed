@@ -1,0 +1,18 @@
+#index:
+#    path: /
+#    controller: App\Controller\DefaultController::index
+# api/config/routes.yaml
+#login_check:
+#    path: /login_check
+#    methods: ['POST']
+
+# Register a user to access secure routes of api
+register:
+    path: /register
+    controller: App\Controller\AuthController::register
+    methods: ['POST']
+
+# Login check endpoint
+api_login_check:
+    path: /login
+    methods: ['POST']

@@ -1,0 +1,72 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
+parameters:
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/*'
+        exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
+
+    # controllers are imported separately to make sure services can be injected
+    # as action arguments even if you don't extend any base controller class
+    App\Controller\:
+        resource: '../src/Controller'
+        tags: ['controller.service_arguments']
+
+    App\Swagger\SwaggerDecorator:
+        decorates: 'api_platform.swagger.normalizer.documentation'
+        arguments: ['@App\Swagger\SwaggerDecorator.inner']
+        autoconfigure: false
+    
+    # Repositories
+    app.user.repository:
+        class: App\Repository\UserRepository
+        arguments:
+            - Symfony\Bridge\Doctrine\RegistryInterface
+            - Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface
+
+    # Controllers
+    app.auth.controller:
+        class: App\Controller\AuthController
+        arguments:
+            - '@app.user.repository'
+
+    
+#    # add more service definitions when explicit configuration is needed
+#    # please note that last definitions always *replace* previous ones
+    GuzzleHttp\ClientInterface: "@eight_points_guzzle.client.salesforce"
+
+    'App\Jisc\SalesforceBundle\Service\SalesforceService': '@salesforce.service'
+    'App\Jisc\SalesforceBundle\Client\SalesforceClient': '@salesforce.client'
+    'App\Jisc\SalesforceBundle\Service\UrlGenerator': '@salesforce.urlGenerator'
+    salesforce.service:
+        class: App\Jisc\SalesforceBundle\Service\SalesforceService
+    salesforce.client:
+        class: App\Jisc\SalesforceBundle\Client\SalesforceClient
+        arguments:
+            $client: '@eight_points_guzzle.client.salesforce'
+            $urlGenerator: '@salesforce.urlGenerator'
+            $authEndpoint: '%env(resolve:SALESFORCE_AUTH_ENDPOINT)%'
+            $clientId: '%env(resolve:SALESFORCE_CLIENT_ID)%'
+            $username: '%env(resolve:SALESFORCE_USERNAME)%'
+    salesforce.urlGenerator:
+        class: App\Jisc\SalesforceBundle\Service\UrlGenerator
+        arguments:
+            $version: '%env(resolve:SALESFORCE_VERSION)%'
+            $endpoint: '%env(resolve:SALESFORCE_REST_ENDPOINT)%'
+    app.customer_resource.search_filter:
+        parent:        'api_platform.doctrine.orm.search_filter'
+        arguments:     [ { 'account': 'exact' } ]
+        tags:          [ { name: 'api_platform.filter', id: 'salesforceContact.search_filter' } ]
+        autowire:      false # required, explained below
+        autoconfigure: false # required, explained below
